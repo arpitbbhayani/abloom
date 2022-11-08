@@ -1,2 +1,4 @@
 words.txt
 words_alpha.txt
+*.csv
+*.png

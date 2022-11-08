@@ -2,9 +2,12 @@ package main
 
 import (
 	"bytes"
+	"encoding/csv"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/arpitbbhayani/abloom"
@@ -14,7 +17,30 @@ var corpusMap map[string]bool
 var testMap map[string]bool
 var sizeData int
 
-func evalBF(size int, hashSeeds []int) {
+type datapoint struct {
+	size        int
+	sizeFrac    float64
+	numHash     int
+	fpRate      float64
+	timeTakenMs int64
+}
+
+func (d *datapoint) toStringSlice() []string {
+	return []string{
+		strconv.FormatInt(int64(d.size), 10),
+		strconv.FormatFloat(d.sizeFrac, 'f', 2, 64),
+		strconv.FormatInt(int64(d.numHash), 10),
+		strconv.FormatFloat(d.fpRate, 'f', 2, 64),
+		strconv.FormatInt(int64(d.timeTakenMs), 10),
+	}
+}
+
+func (d *datapoint) String() string {
+	return fmt.Sprintf("size=%d,size_frac=%f,num_hash=%d,fp_rate=%f,time_taken_ms=%d",
+		d.size, d.sizeFrac, d.numHash, d.fpRate, d.timeTakenMs)
+}
+
+func evalBF(size int, hashSeeds []int) *datapoint {
 	start := time.Now()
 	var falsePos int = 0
 	bf := abloom.NewBloom(size, hashSeeds)
@@ -27,8 +53,13 @@ func evalBF(size int, hashSeeds []int) {
 		}
 	}
 
-	log.Printf("bloom filter: len = %d bytes, frac size = %f%%, numHash = %d, false postivity = %f%%, time = %s\n",
-		size, float64(size)/float64(sizeData)*100, len(hashSeeds), float64(falsePos)/float64(len(testMap))*100, time.Since(start))
+	return &datapoint{
+		size:        size,
+		sizeFrac:    float64(size) / float64(sizeData) * 100,
+		numHash:     len(hashSeeds),
+		fpRate:      float64(falsePos) / float64(len(testMap)) * 100,
+		timeTakenMs: time.Since(start).Milliseconds(),
+	}
 }
 
 func evalSet(size int) {
@@ -38,8 +69,6 @@ func evalSet(size int) {
 			falsePos++
 		}
 	}
-	log.Printf("regular set: len = %d bytes, false postivity = %f%%\n",
-		size, float64(falsePos)/float64(len(testMap))*100)
 }
 
 func setup() {
@@ -78,6 +107,19 @@ func setup() {
 	log.Println("number of words in test", len(testMap))
 }
 
+func flushDatapoints(name string, datapoints []*datapoint) {
+	fp, err := os.Create(name)
+	if err != nil {
+		log.Fatal(err)
+	}
+	w := csv.NewWriter(fp)
+	w.Write([]string{"size", "size frac", "num hash", "fp rate", "time taken"})
+	for i := range datapoints {
+		w.Write(datapoints[i].toStringSlice())
+	}
+	w.Flush()
+}
+
 func main() {
 	setup()
 
@@ -101,27 +143,21 @@ func main() {
 	}
 
 	evalSet(sizeData)
-	evalBF(1*1024, seeds[:2])
-	evalBF(2*1024, seeds[:2])
-	evalBF(3*1024, seeds[:2])
-	evalBF(4*1024, seeds[:2])
-	evalBF(5*1024, seeds[:2])
-	evalBF(10*1024, seeds[:2])
-	evalBF(20*1024, seeds[:2])
-	evalBF(30*1024, seeds[:2])
-	evalBF(40*1024, seeds[:2])
-	evalBF(50*1024, seeds[:2])
-	evalBF(100*1024, seeds[:2])
-	evalBF(150*1024, seeds[:2])
-	evalBF(200*1024, seeds[:2])
-	evalBF(250*1024, seeds[:2])
-	evalBF(300*1024, seeds[:2])
-	evalBF(350*1024, seeds[:2])
-	evalBF(400*1024, seeds[:2])
-	evalBF(450*1024, seeds[:2])
-	evalBF(500*1024, seeds[:2])
 
-	for i := 1; i < len(seeds); i++ {
-		evalBF(500*1024, seeds[:i])
+	var sizeDatapoints []*datapoint
+	for _, sizeKB := range []int{1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 100, 150, 200, 250, 300, 350, 400, 350, 500} {
+		dp := evalBF(sizeKB*1024, seeds[:2])
+		sizeDatapoints = append(sizeDatapoints, dp)
+		log.Println(dp)
 	}
+
+	var hashFnDatapoints []*datapoint
+	for i := 1; i < len(seeds); i++ {
+		dp := evalBF(500*1024, seeds[:i])
+		hashFnDatapoints = append(hashFnDatapoints, dp)
+		log.Println(dp)
+	}
+
+	flushDatapoints("size-bench.csv", sizeDatapoints)
+	flushDatapoints("hashfn-bench.csv", hashFnDatapoints)
 }

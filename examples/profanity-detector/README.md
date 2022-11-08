@@ -22,6 +22,10 @@ Download the [words_alpha.txt](https://github.com/dwyl/english-words) file and s
 
 ```
 $ go run examples/profanity-detector/main.go
+$ pip install graph-cli
+$ graph size-bench.csv --xcol 2 --ycol 4 -o size-fp.png
+$ graph hashfn-bench.csv --xcol 3 --ycol 4 -o hash-fp.png
+$ graph hashfn-bench.csv --xcol 3 --ycol 5 -o hash-time.png
 ```
 
 ## Results
@@ -41,43 +45,67 @@ We also see how the false positivity rate drops by inncreasing the number of has
 but after a certain limit it adversely affects the false positivity. Time taken to check
 the existence increases with increasing the number of hash functions.
 
+### Bloom Filter Size vs False Positive Rate
+
+We can see how the size of bloom filter is related to the observed false
+positivity rate. Larger the size, smaller the false positivity rate.
+
+![size-fp](https://user-images.githubusercontent.com/4745789/200518788-d545bc41-425b-47bf-a609-33b3a9ade34a.png)
+
 ```
-2022/11/08 12:31:21 total length of data 3864812 bytes
-2022/11/08 12:31:21 number of words in corpus 333097
-2022/11/08 12:31:21 number of words in test 37009
-2022/11/08 12:31:21 regular set: len = 3864812 bytes, false postivity = 0.000000%
-2022/11/08 12:31:21 bloom filter: len = 1024 bytes, frac size = 0.026495%, numHash = 2, false postivity = 100.000000%, time = 125.2767ms
-2022/11/08 12:31:22 bloom filter: len = 2048 bytes, frac size = 0.052991%, numHash = 2, false postivity = 100.000000%, time = 89.0184ms
-2022/11/08 12:31:22 bloom filter: len = 3072 bytes, frac size = 0.079486%, numHash = 2, false postivity = 100.000000%, time = 86.2646ms
-2022/11/08 12:31:22 bloom filter: len = 4096 bytes, frac size = 0.105982%, numHash = 2, false postivity = 100.000000%, time = 95.9525ms
-2022/11/08 12:31:22 bloom filter: len = 5120 bytes, frac size = 0.132477%, numHash = 2, false postivity = 100.000000%, time = 111.8181ms
-2022/11/08 12:31:22 bloom filter: len = 10240 bytes, frac size = 0.264955%, numHash = 2, false postivity = 99.959469%, time = 84.5069ms
-2022/11/08 12:31:22 bloom filter: len = 20480 bytes, frac size = 0.529909%, numHash = 2, false postivity = 96.619741%, time = 85.2401ms
-2022/11/08 12:31:22 bloom filter: len = 30720 bytes, frac size = 0.794864%, numHash = 2, false postivity = 87.203113%, time = 150.0835ms
-2022/11/08 12:31:22 bloom filter: len = 40960 bytes, frac size = 1.059819%, numHash = 2, false postivity = 75.349239%, time = 102.3893ms
-2022/11/08 12:31:22 bloom filter: len = 51200 bytes, frac size = 1.324773%, numHash = 2, false postivity = 64.595098%, time = 92.3724ms
-2022/11/08 12:31:22 bloom filter: len = 102400 bytes, frac size = 2.649547%, numHash = 2, false postivity = 30.957335%, time = 120.4588ms
-2022/11/08 12:31:23 bloom filter: len = 153600 bytes, frac size = 3.974320%, numHash = 2, false postivity = 17.720014%, time = 150.2355ms
-2022/11/08 12:31:23 bloom filter: len = 204800 bytes, frac size = 5.299093%, numHash = 2, false postivity = 11.489097%, time = 100.4356ms
-2022/11/08 12:31:23 bloom filter: len = 256000 bytes, frac size = 6.623867%, numHash = 2, false postivity = 7.844038%, time = 99.6152ms
-2022/11/08 12:31:23 bloom filter: len = 307200 bytes, frac size = 7.948640%, numHash = 2, false postivity = 5.652679%, time = 96.0896ms
-2022/11/08 12:31:23 bloom filter: len = 358400 bytes, frac size = 9.273414%, numHash = 2, false postivity = 4.436759%, time = 105.9378ms
-2022/11/08 12:31:23 bloom filter: len = 409600 bytes, frac size = 10.598187%, numHash = 2, false postivity = 3.528871%, time = 98.0646ms
-2022/11/08 12:31:23 bloom filter: len = 460800 bytes, frac size = 11.922960%, numHash = 2, false postivity = 2.785809%, time = 183.4335ms
-2022/11/08 12:31:23 bloom filter: len = 512000 bytes, frac size = 13.247734%, numHash = 2, false postivity = 2.437245%, time = 109.9409ms
-2022/11/08 12:31:24 bloom filter: len = 512000 bytes, frac size = 13.247734%, numHash = 1, false postivity = 8.119647%, time = 103.919ms
-2022/11/08 12:31:24 bloom filter: len = 512000 bytes, frac size = 13.247734%, numHash = 2, false postivity = 2.437245%, time = 128.8963ms
-2022/11/08 12:31:24 bloom filter: len = 512000 bytes, frac size = 13.247734%, numHash = 3, false postivity = 1.075414%, time = 119.3191ms
-2022/11/08 12:31:24 bloom filter: len = 512000 bytes, frac size = 13.247734%, numHash = 4, false postivity = 0.605258%, time = 127.6193ms
-2022/11/08 12:31:24 bloom filter: len = 512000 bytes, frac size = 13.247734%, numHash = 5, false postivity = 0.413413%, time = 200.3413ms
-2022/11/08 12:31:24 bloom filter: len = 512000 bytes, frac size = 13.247734%, numHash = 6, false postivity = 0.337756%, time = 214.3821ms
-2022/11/08 12:31:25 bloom filter: len = 512000 bytes, frac size = 13.247734%, numHash = 7, false postivity = 0.289119%, time = 206.972ms
-2022/11/08 12:31:25 bloom filter: len = 512000 bytes, frac size = 13.247734%, numHash = 8, false postivity = 0.259396%, time = 221.0815ms
-2022/11/08 12:31:25 bloom filter: len = 512000 bytes, frac size = 13.247734%, numHash = 9, false postivity = 0.262098%, time = 221.0932ms
-2022/11/08 12:31:25 bloom filter: len = 512000 bytes, frac size = 13.247734%, numHash = 10, false postivity = 0.272907%, time = 333.8154ms
-2022/11/08 12:31:26 bloom filter: len = 512000 bytes, frac size = 13.247734%, numHash = 11, false postivity = 0.286417%, time = 318.8112ms
-2022/11/08 12:31:26 bloom filter: len = 512000 bytes, frac size = 13.247734%, numHash = 12, false postivity = 0.329650%, time = 265.3814ms
-2022/11/08 12:31:26 bloom filter: len = 512000 bytes, frac size = 13.247734%, numHash = 13, false postivity = 0.389095%, time = 278.5702ms
-2022/11/08 12:31:26 bloom filter: len = 512000 bytes, frac size = 13.247734%, numHash = 14, false postivity = 0.478262%, time = 343.0103ms
-2022/11/08 12:31:27 bloom filter: len = 512000 bytes, frac size = 13.247734%, numHash = 15, false postivity = 0.491772%, time = 300.6598ms
+2022/11/08 14:11:15 total length of data 3864812 bytes
+2022/11/08 14:11:15 number of words in corpus 333097
+2022/11/08 14:11:15 number of words in test 37009
+2022/11/08 14:11:15 size=1024,size_frac=0.026495,num_hash=2,fp_rate=100.000000,time_taken_ms=98
+2022/11/08 14:11:15 size=2048,size_frac=0.052991,num_hash=2,fp_rate=100.000000,time_taken_ms=89
+2022/11/08 14:11:15 size=3072,size_frac=0.079486,num_hash=2,fp_rate=100.000000,time_taken_ms=79
+2022/11/08 14:11:15 size=4096,size_frac=0.105982,num_hash=2,fp_rate=100.000000,time_taken_ms=92
+2022/11/08 14:11:15 size=5120,size_frac=0.132477,num_hash=2,fp_rate=100.000000,time_taken_ms=101
+2022/11/08 14:11:15 size=10240,size_frac=0.264955,num_hash=2,fp_rate=99.959469,time_taken_ms=80
+2022/11/08 14:11:15 size=20480,size_frac=0.529909,num_hash=2,fp_rate=96.619741,time_taken_ms=116
+2022/11/08 14:11:15 size=30720,size_frac=0.794864,num_hash=2,fp_rate=87.203113,time_taken_ms=97
+2022/11/08 14:11:16 size=40960,size_frac=1.059819,num_hash=2,fp_rate=75.349239,time_taken_ms=89
+2022/11/08 14:11:16 size=51200,size_frac=1.324773,num_hash=2,fp_rate=64.595098,time_taken_ms=103
+2022/11/08 14:11:16 size=102400,size_frac=2.649547,num_hash=2,fp_rate=30.957335,time_taken_ms=100
+2022/11/08 14:11:16 size=153600,size_frac=3.974320,num_hash=2,fp_rate=17.720014,time_taken_ms=89
+2022/11/08 14:11:16 size=204800,size_frac=5.299093,num_hash=2,fp_rate=11.489097,time_taken_ms=106
+2022/11/08 14:11:16 size=256000,size_frac=6.623867,num_hash=2,fp_rate=7.844038,time_taken_ms=104
+2022/11/08 14:11:16 size=307200,size_frac=7.948640,num_hash=2,fp_rate=5.652679,time_taken_ms=92
+2022/11/08 14:11:16 size=358400,size_frac=9.273414,num_hash=2,fp_rate=4.436759,time_taken_ms=99
+2022/11/08 14:11:16 size=409600,size_frac=10.598187,num_hash=2,fp_rate=3.528871,time_taken_ms=110
+2022/11/08 14:11:16 size=358400,size_frac=9.273414,num_hash=2,fp_rate=4.436759,time_taken_ms=88
+2022/11/08 14:11:17 size=512000,size_frac=13.247734,num_hash=2,fp_rate=2.437245,time_taken_ms=87
+```
+
+### Number of Hash Functions vs False Positive Rate and Time
+
+Here we see how the number of hash functions used in a bloom filter
+affects the false positivity rate and also time. The FP rate decreases
+initially but after a certain stage it saturates and then increases.
+
+The time takes for the operation increases almost linearly with the
+number of hash functions given how expensive hash computation can get.
+
+![hash-fp](https://user-images.githubusercontent.com/4745789/200518773-76631419-a909-408e-9063-08a366218da2.png)
+![hash-time](https://user-images.githubusercontent.com/4745789/200518783-835411e1-838e-4587-8b54-1de0acb54ca1.png)
+
+```
+2022/11/08 14:11:15 total length of data 3864812 bytes
+2022/11/08 14:11:15 number of words in corpus 333097
+2022/11/08 14:11:15 number of words in test 37009
+2022/11/08 14:11:17 size=512000,size_frac=13.247734,num_hash=1,fp_rate=8.119647,time_taken_ms=97
+2022/11/08 14:11:17 size=512000,size_frac=13.247734,num_hash=2,fp_rate=2.437245,time_taken_ms=120
+2022/11/08 14:11:17 size=512000,size_frac=13.247734,num_hash=3,fp_rate=1.075414,time_taken_ms=106
+2022/11/08 14:11:17 size=512000,size_frac=13.247734,num_hash=4,fp_rate=0.605258,time_taken_ms=114
+2022/11/08 14:11:17 size=512000,size_frac=13.247734,num_hash=5,fp_rate=0.413413,time_taken_ms=142
+2022/11/08 14:11:17 size=512000,size_frac=13.247734,num_hash=6,fp_rate=0.337756,time_taken_ms=158
+2022/11/08 14:11:17 size=512000,size_frac=13.247734,num_hash=7,fp_rate=0.289119,time_taken_ms=214
+2022/11/08 14:11:18 size=512000,size_frac=13.247734,num_hash=8,fp_rate=0.259396,time_taken_ms=235
+2022/11/08 14:11:18 size=512000,size_frac=13.247734,num_hash=9,fp_rate=0.262098,time_taken_ms=192
+2022/11/08 14:11:18 size=512000,size_frac=13.247734,num_hash=10,fp_rate=0.272907,time_taken_ms=242
+2022/11/08 14:11:18 size=512000,size_frac=13.247734,num_hash=11,fp_rate=0.286417,time_taken_ms=237
+2022/11/08 14:11:19 size=512000,size_frac=13.247734,num_hash=12,fp_rate=0.329650,time_taken_ms=236
+2022/11/08 14:11:19 size=512000,size_frac=13.247734,num_hash=13,fp_rate=0.389095,time_taken_ms=286
+2022/11/08 14:11:19 size=512000,size_frac=13.247734,num_hash=14,fp_rate=0.478262,time_taken_ms=318
+2022/11/08 14:11:19 size=512000,size_frac=13.247734,num_hash=15,fp_rate=0.491772,time_taken_ms=288
 ```
