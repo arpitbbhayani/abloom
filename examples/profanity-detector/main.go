@@ -11,7 +11,7 @@ import (
 
 func evalBF(size int, sizeData int, corpus map[string]bool, test map[string]bool) {
 	var falsePos int = 0
-	bf := abloom.NewBloom(size)
+	bf := abloom.NewBloom(size, nil)
 	for word := range corpus {
 		bf.Put([]byte(word))
 	}

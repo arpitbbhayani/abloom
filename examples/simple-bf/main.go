@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	b := abloom.NewBloom(512)
+	b := abloom.NewBloom(512, nil)
 	b.Put([]byte("apple"))
 	b.Put([]byte("banana"))
 	b.Put([]byte("cat"))
