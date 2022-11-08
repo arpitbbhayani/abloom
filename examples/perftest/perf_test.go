@@ -17,10 +17,7 @@ var testWordsS []string
 var bf *abloom.Bloom
 
 func init() {
-	corpusMap = make(map[string]bool)
-	testWordsB = make([][]byte, 0)
-	testWordsS = make([]string, 0)
-	bf = abloom.NewBloom(500 * 1024)
+	setup()
 }
 
 func checkBF(word []byte) bool {
@@ -38,6 +35,11 @@ func checkSet(word string) bool {
 }
 
 func setup() {
+	corpusMap = make(map[string]bool)
+	testWordsB = make([][]byte, 0)
+	testWordsS = make([]string, 0)
+	bf = abloom.NewBloom(500 * 1024)
+
 	frac := 0.9
 
 	fp, err := os.Open("../profanity-detector/words.txt")
@@ -76,7 +78,7 @@ func BenchmarkBFCheck(b *testing.B) {
 	}
 }
 
-func BenchmarkBFOneCheck(b *testing.B) {
+func BenchmarkBFFirstCheck(b *testing.B) {
 	setup()
 	for i := 0; i < b.N; i++ {
 		checkBF(testWordsB[0])
@@ -100,7 +102,7 @@ func BenchmarkSetCheck(b *testing.B) {
 	}
 }
 
-func BenchmarkSetOneCheck(b *testing.B) {
+func BenchmarkSetFirstCheck(b *testing.B) {
 	setup()
 	for i := 0; i < b.N; i++ {
 		checkSet(testWordsS[0])
@@ -112,5 +114,30 @@ func BenchmarkSetOneRandomCheck(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		idx := rand.Int() % len(testWordsS)
 		checkSet(testWordsS[idx])
+	}
+}
+
+func TestCorrectness(t *testing.T) {
+	setup()
+
+	for w, shouldExist := range map[string]bool{
+		"house": true,
+		"arpit": false,
+	} {
+		if shouldExist {
+			if !checkBF([]byte(w)) {
+				t.Errorf("%s should be present in bloom but it is not", w)
+			}
+			if !checkSet(w) {
+				t.Errorf("%s should be present in set but it is not", w)
+			}
+		} else {
+			if checkBF([]byte(w)) {
+				t.Errorf("%s should not be present in bloom but it is", w)
+			}
+			if checkSet(w) {
+				t.Errorf("%s should not be present in set but it is", w)
+			}
+		}
 	}
 }

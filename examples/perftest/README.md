@@ -20,10 +20,10 @@ goos: linux
 goarch: amd64
 pkg: github.com/arpitbbhayani/abloom/examples/perftest
 cpu: AMD Ryzen 7 4800U with Radeon Graphics         
-BenchmarkBFCheck-16                           67          17266452 ns/op
-BenchmarkBFOneCheck-16                  14426850                72.92 ns/op
-BenchmarkBFOneRandomCheck-16             3340220               301.2 ns/op
-BenchmarkSetCheck-16                          13          80918323 ns/op
-BenchmarkSetOneCheck-16                 102268398               11.38 ns/op
-BenchmarkSetOneRandomCheck-16            4730517               246.0 ns/op
+BenchmarkBFCheck-16                          381           3172999 ns/op
+BenchmarkBFFirstCheck-16                20828637                51.24 ns/op
+BenchmarkBFOneRandomCheck-16            11330626               112.2 ns/op
+BenchmarkSetCheck-16                         230           4906682 ns/op
+BenchmarkSetFirstCheck-16               82293306                14.12 ns/op
+BenchmarkSetOneRandomCheck-16            6412029               178.6 ns/op
 ```
