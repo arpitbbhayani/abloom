@@ -6,7 +6,7 @@ import (
 	"github.com/twmb/murmur3"
 )
 
-type bloom struct {
+type Bloom struct {
 	filter []byte
 }
 
@@ -19,14 +19,14 @@ func init() {
 
 // NewBloom creates a bloom filter of length `len` bytes
 // The number of hash functions are fixed at 2
-func NewBloom(len int) *bloom {
-	return &bloom{
+func NewBloom(len int) *Bloom {
+	return &Bloom{
 		filter: make([]byte, len),
 	}
 }
 
 // Put puts the element `x` in the bloom filter
-func (b *bloom) Put(x []byte) error {
+func (b *Bloom) Put(x []byte) error {
 	var err error
 	for i := range fns {
 		fns[i].Reset()
@@ -41,7 +41,7 @@ func (b *bloom) Put(x []byte) error {
 }
 
 // Check checks the existence of the element `x` in the bloom filter
-func (b *bloom) Check(x []byte) (bool, error) {
+func (b *Bloom) Check(x []byte) (bool, error) {
 	var err error
 	var keyExists bool = true
 	for i := range fns {
