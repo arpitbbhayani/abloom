@@ -92,6 +92,7 @@ BenchmarkSetOneRandomCheck-16            6412029               178.6 ns/op
 ## Citations
 
 - Bloom, Burton H. “Space/Time Trade-Offs in Hash Coding with Allowable Errors.” Communications of the ACM 13, no. 7 (July 1970): 422–26. https://doi.org/10.1145/362686.362692.
+- Rothenberg, Christian Esteve, Carlos A. B. Macapuna, Fabio L. Verdi, and Mauricio F. Magalhaes. “The Deletable Bloom Filter: A New Member of the Bloom Family.” arXiv, May 3, 2010. http://arxiv.org/abs/1005.0352.
 
 ## Contributors
 

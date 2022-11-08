@@ -49,8 +49,7 @@ func (b *Bloom) Put(x []byte) error {
 			return err
 		}
 		pos := int(b.fns[i].Sum32()) % (len(b.filter) * 8)
-		idx, offset := pos/8, pos%8
-		b.filter[idx] = b.filter[idx] | 1<<offset
+		setBit(b.filter, pos)
 	}
 	return nil
 }
@@ -65,8 +64,7 @@ func (b *Bloom) Check(x []byte) (bool, error) {
 			return false, err
 		}
 		pos := int(b.fns[i].Sum32()) % (len(b.filter) * 8)
-		idx, offset := pos/8, pos%8
-		if b.filter[idx]&(1<<offset) == 0 {
+		if getBit(b.filter, pos) == 0 {
 			keyExists = false
 			break
 		}
