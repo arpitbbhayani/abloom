@@ -10,6 +10,11 @@ func setBit(buf []byte, b int) {
 	buf[idx] = buf[idx] | 1<<offset
 }
 
+func resetBit(buf []byte, b int) {
+	idx, offset := b/8, b%8
+	buf[idx] = buf[idx] & ^(1 << offset)
+}
+
 func getBit(buf []byte, b int) byte {
 	idx, offset := b/8, b%8
 	return buf[idx] & (1 << offset)

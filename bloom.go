@@ -42,14 +42,9 @@ func newBloom(size int, hashSeeds []int) *bloom {
 
 // Put puts the element `x` in the bloom filter
 func (b *bloom) put(x []byte) ([]int, error) {
-	var err error
-	var positions []int = make([]int, len(b.fns))
-	for i := range b.fns {
-		b.fns[i].Reset()
-		if _, err = b.fns[i].Write(x); err != nil {
-			return nil, err
-		}
-		positions[i] = int(b.fns[i].Sum32()) % (len(b.filter) * 8)
+	positions, err := b.positions(x)
+	if err != nil {
+		return nil, err
 	}
 	for i := range positions {
 		setBit(b.filter, positions[i])
@@ -73,4 +68,18 @@ func (b *bloom) check(x []byte) (bool, error) {
 		}
 	}
 	return keyExists, nil
+}
+
+// positions returns the evaluated positions for the element `x` in the bloom filter
+func (b *bloom) positions(x []byte) ([]int, error) {
+	var err error
+	var positions []int = make([]int, len(b.fns))
+	for i := range b.fns {
+		b.fns[i].Reset()
+		if _, err = b.fns[i].Write(x); err != nil {
+			return nil, err
+		}
+		positions[i] = int(b.fns[i].Sum32()) % (len(b.filter) * 8)
+	}
+	return positions, nil
 }
