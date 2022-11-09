@@ -1,7 +1,11 @@
 abloom
 ===
 
-`abloom` is a pure Go implementation of Bloom Filter.
+`abloom` is a pure Go implementation of Bloom Filter. The implementation supports the following
+Bloom Filters
+
+- Simple Bloom Filter
+- Deletable Bloom Filter
 
 ## Installation
 
