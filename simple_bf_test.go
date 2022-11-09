@@ -12,8 +12,8 @@ type tcase struct {
 	exists bool
 }
 
-func TestBloom(t *testing.T) {
-	b := abloom.NewBloom(1, []int{3719237192, 8981437})
+func TestSimpleBF(t *testing.T) {
+	b := abloom.NewSimpleBF(1, []int{3719237192, 8981437})
 	for _, tc := range []tcase{
 		{'p', "a", true},
 		{'p', "b", true},

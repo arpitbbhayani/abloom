@@ -1,9 +1,7 @@
 package abloom
 
-import "fmt"
-
 type DeletableBloom struct {
-	Bloom
+	bloom       *bloom
 	numRegions  int
 	regionCover int
 	pallete     []byte
@@ -22,33 +20,30 @@ func NewDeletableBloom(size int, hashSeeds []int, numRegions int) *DeletableBloo
 		numRegions:  numRegions,
 		regionCover: divCeil(size*8, numRegions),
 		pallete:     make([]byte, divCeil(numRegions, 8)),
-		Bloom:       *NewBloom(size, hashSeeds),
+		bloom:       newBloom(size, hashSeeds),
 	}
 	return bf
 }
 
 // Put puts the element `x` in the deletable bloom filter
 func (b *DeletableBloom) Put(x []byte) error {
-	var err error
-	for i := range b.fns {
-		b.fns[i].Reset()
-		if _, err = b.fns[i].Write(x); err != nil {
-			return err
-		}
-		pos := int(b.fns[i].Sum32()) % (len(b.filter) * 8)
-		setBit(b.filter, pos)
-		fmt.Println(pos)
+	positions, err := b.bloom.put(x)
+	if err != nil {
+		return err
+	}
 
-		// updating the pallete, get the region number
-		posReg := pos / b.regionCover
+	// updating the pallete, get the region number
+	for i := range positions {
+		posReg := positions[i] / b.regionCover
 		setBit(b.pallete, posReg)
 	}
+
 	printFilter(b.pallete)
-	printFilter(b.filter)
+	printFilter(b.bloom.filter)
 	return nil
 }
 
 // Check checks the existence of the element `x` in the bloom filter
 func (b *DeletableBloom) Check(x []byte) (bool, error) {
-	return b.Bloom.Check(x)
+	return b.bloom.check(x)
 }

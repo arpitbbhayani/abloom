@@ -15,7 +15,7 @@ A simple example of using bloom filter is as shown below. More examples can be f
 in the [examples directory](https://github.com/arpitbbhayani/abloom/tree/master/examples/) of the package.
 
 ```go
-package examples
+package main
 
 import (
 	"log"
@@ -23,8 +23,8 @@ import (
 	"github.com/arpitbbhayani/abloom"
 )
 
-func SimpleBloom() {
-	b := abloom.NewBloom(512, nil)
+func main() {
+	b := abloom.NewSimpleBF(512, nil)
 	b.Put([]byte("apple"))
 	b.Put([]byte("banana"))
 	b.Put([]byte("cat"))

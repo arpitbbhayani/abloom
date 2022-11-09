@@ -43,7 +43,7 @@ func (d *datapoint) String() string {
 func evalBF(size int, hashSeeds []int) *datapoint {
 	start := time.Now()
 	var falsePos int = 0
-	bf := abloom.NewBloom(size, hashSeeds)
+	bf := abloom.NewSimpleBF(size, hashSeeds)
 	for word := range corpusMap {
 		bf.Put([]byte(word))
 	}

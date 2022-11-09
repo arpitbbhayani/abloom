@@ -9,19 +9,19 @@ import (
 
 const DefaultHashFns int = 2
 
-type Bloom struct {
+type bloom struct {
 	fns    []hash.Hash32
 	filter []byte
 }
 
-// NewBloom creates a bloom filter of length `size` bytes and
+// NewSimpleBF creates a bloom filter of length `size` bytes and
 // `hashSeeds` are the seed values for themurmur hash functions
 // bloom will be initialized with len(hashSeeds) hash functions
 // with provided seeds.
 // if no hashSeeds are provided then 2 hash functions will be used
 // with random seeds.
-func NewBloom(size int, hashSeeds []int) *Bloom {
-	bf := &Bloom{filter: make([]byte, size)}
+func newBloom(size int, hashSeeds []int) *bloom {
+	bf := &bloom{filter: make([]byte, size)}
 
 	if hashSeeds == nil || len(hashSeeds) == 0 {
 		hashSeeds = make([]int, DefaultHashFns)
@@ -41,21 +41,24 @@ func NewBloom(size int, hashSeeds []int) *Bloom {
 }
 
 // Put puts the element `x` in the bloom filter
-func (b *Bloom) Put(x []byte) error {
+func (b *bloom) put(x []byte) ([]int, error) {
 	var err error
+	var positions []int = make([]int, len(b.fns))
 	for i := range b.fns {
 		b.fns[i].Reset()
 		if _, err = b.fns[i].Write(x); err != nil {
-			return err
+			return nil, err
 		}
-		pos := int(b.fns[i].Sum32()) % (len(b.filter) * 8)
-		setBit(b.filter, pos)
+		positions[i] = int(b.fns[i].Sum32()) % (len(b.filter) * 8)
 	}
-	return nil
+	for i := range positions {
+		setBit(b.filter, positions[i])
+	}
+	return positions, nil
 }
 
 // Check checks the existence of the element `x` in the bloom filter
-func (b *Bloom) Check(x []byte) (bool, error) {
+func (b *bloom) check(x []byte) (bool, error) {
 	var err error
 	var keyExists bool = true
 	for i := range b.fns {
