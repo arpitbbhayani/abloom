@@ -18,7 +18,7 @@ func NewSimpleBF(size int, hashSeeds []int) *SimpleBF {
 
 // Put puts the element `x` in the bloom filter
 func (b *SimpleBF) Put(x []byte) error {
-	_, err := b.bloom.put(x)
+	_, _, err := b.bloom.put(x)
 	return err
 }
 

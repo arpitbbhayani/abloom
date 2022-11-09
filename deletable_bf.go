@@ -6,7 +6,7 @@ type DeletableBloom struct {
 	pallete      []byte
 }
 
-// NewDeletableBloom creates a deletable bloom filter of length `size` bytes
+// NewDeletableBF creates a deletable bloom filter of length `size` bytes
 // and `hashSeeds` are the seed values for the murmur hash functions
 // bloom will be initialized with len(hashSeeds) hash functions
 // with provided seeds.
@@ -14,7 +14,7 @@ type DeletableBloom struct {
 // with random seeds.
 // numRegions are the number of regions in which the bloom filter needs to be split
 // so as to make it deletable. For each region, one extra bit of memory will be allocated.
-func NewDeletableBloom(size int, hashSeeds []int, numRegions int) *DeletableBloom {
+func NewDeletableBF(size int, hashSeeds []int, numRegions int) *DeletableBloom {
 	bf := &DeletableBloom{
 		perRegionLen: divCeil(size*8, numRegions),
 		pallete:      make([]byte, divCeil(numRegions, 8)),
@@ -25,20 +25,19 @@ func NewDeletableBloom(size int, hashSeeds []int, numRegions int) *DeletableBloo
 
 // Put puts the element `x` in the deletable bloom filter
 func (b *DeletableBloom) Put(x []byte) error {
-	positions, err := b.bloom.put(x)
+	_, unsetBits, err := b.bloom.put(x)
 	if err != nil {
 		return err
 	}
 
 	// updating the pallete, get the region number
-	for i := range positions {
-		posReg := positions[i] / b.perRegionLen
-		// if collision then set the corresponding bit in the pallet
-		if getBit(b.bloom.filter, positions[i]) == 1 {
-			setBit(b.pallete, posReg)
-		}
+	for i := range unsetBits {
+		posReg := unsetBits[i] / b.perRegionLen
+		setBit(b.pallete, posReg)
 	}
 
+	printFilter(b.pallete)
+	printFilter(b.bloom.filter)
 	return nil
 }
 

@@ -41,15 +41,22 @@ func newBloom(size int, hashSeeds []int) *bloom {
 }
 
 // Put puts the element `x` in the bloom filter
-func (b *bloom) put(x []byte) ([]int, error) {
+func (b *bloom) put(x []byte) ([]int, []int, error) {
+	var setBits []int = make([]int, 0, len(b.fns))
+	var unsetBits []int = make([]int, 0, len(b.fns))
 	positions, err := b.positions(x)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	for i := range positions {
-		setBit(b.filter, positions[i])
+		if getBit(b.filter, positions[i]) == 0 {
+			setBit(b.filter, positions[i])
+			setBits = append(setBits, positions[i])
+		} else {
+			unsetBits = append(unsetBits, positions[i])
+		}
 	}
-	return positions, nil
+	return setBits, unsetBits, nil
 }
 
 // Check checks the existence of the element `x` in the bloom filter
