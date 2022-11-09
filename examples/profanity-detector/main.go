@@ -23,6 +23,7 @@ type datapoint struct {
 	numHash     int
 	fpRate      float64
 	timeTakenMs int64
+	numRegions  int
 }
 
 func (d *datapoint) toStringSlice() []string {
@@ -32,18 +33,19 @@ func (d *datapoint) toStringSlice() []string {
 		strconv.FormatInt(int64(d.numHash), 10),
 		strconv.FormatFloat(d.fpRate, 'f', 2, 64),
 		strconv.FormatInt(int64(d.timeTakenMs), 10),
+		strconv.FormatInt(int64(d.numRegions), 10),
 	}
 }
 
 func (d *datapoint) String() string {
-	return fmt.Sprintf("size=%d,size_frac=%f,num_hash=%d,fp_rate=%f,time_taken_ms=%d",
-		d.size, d.sizeFrac, d.numHash, d.fpRate, d.timeTakenMs)
+	return fmt.Sprintf("size=%d,size_frac=%f,num_hash=%d,fp_rate=%f,time_taken_ms=%d,num_regions=%d",
+		d.size, d.sizeFrac, d.numHash, d.fpRate, d.timeTakenMs, d.numRegions)
 }
 
 func evalBF(size int, hashSeeds []int) *datapoint {
 	start := time.Now()
 	var falsePos int = 0
-	bf := abloom.NewBloom(size, hashSeeds)
+	bf := abloom.NewSimpleBF(size, hashSeeds)
 	for word := range corpusMap {
 		bf.Put([]byte(word))
 	}
@@ -59,6 +61,34 @@ func evalBF(size int, hashSeeds []int) *datapoint {
 		numHash:     len(hashSeeds),
 		fpRate:      float64(falsePos) / float64(len(testMap)) * 100,
 		timeTakenMs: time.Since(start).Milliseconds(),
+	}
+}
+
+func evalDBF(size int, hashSeeds []int, numRegions int) *datapoint {
+	start := time.Now()
+	var falsePos int = 0
+	bf := abloom.NewDeletableBF(size, hashSeeds, numRegions)
+	for word := range corpusMap {
+		bf.Put([]byte(word))
+	}
+
+	for k := range corpusMap {
+		bf.Delete([]byte(k))
+	}
+
+	for word := range corpusMap {
+		if exists, _ := bf.Check([]byte(word)); exists {
+			falsePos++
+		}
+	}
+
+	return &datapoint{
+		size:        size,
+		sizeFrac:    float64(size) / float64(sizeData) * 100,
+		numHash:     len(hashSeeds),
+		fpRate:      float64(falsePos) / float64(len(corpusMap)) * 100,
+		timeTakenMs: time.Since(start).Milliseconds(),
+		numRegions:  numRegions,
 	}
 }
 
@@ -113,7 +143,7 @@ func flushDatapoints(name string, datapoints []*datapoint) {
 		log.Fatal(err)
 	}
 	w := csv.NewWriter(fp)
-	w.Write([]string{"size", "size frac", "num hash", "fp rate", "time taken"})
+	w.Write([]string{"size", "size frac", "num hash", "fp rate", "time taken", "num regions"})
 	for i := range datapoints {
 		w.Write(datapoints[i].toStringSlice())
 	}
@@ -150,6 +180,7 @@ func main() {
 		sizeDatapoints = append(sizeDatapoints, dp)
 		log.Println(dp)
 	}
+	flushDatapoints("size-bench.csv", sizeDatapoints)
 
 	var hashFnDatapoints []*datapoint
 	for i := 1; i < len(seeds); i++ {
@@ -157,7 +188,23 @@ func main() {
 		hashFnDatapoints = append(hashFnDatapoints, dp)
 		log.Println(dp)
 	}
-
-	flushDatapoints("size-bench.csv", sizeDatapoints)
 	flushDatapoints("hashfn-bench.csv", hashFnDatapoints)
+
+	var dbfRegionDatapoints []*datapoint
+	for _, numRegions := range []int{
+		1 << 4,
+		1 << 8,
+		1 << 16,
+		1 << 17,
+		1 << 18,
+		1 << 19,
+		1 << 20,
+		1 << 21,
+		1 << 22,
+	} {
+		dp := evalDBF(100*1024, seeds[:2], numRegions)
+		dbfRegionDatapoints = append(dbfRegionDatapoints, dp)
+		log.Println(dp)
+	}
+	flushDatapoints("dbf-region-bench.csv", dbfRegionDatapoints)
 }

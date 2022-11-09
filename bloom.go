@@ -9,19 +9,19 @@ import (
 
 const DefaultHashFns int = 2
 
-type Bloom struct {
+type bloom struct {
 	fns    []hash.Hash32
 	filter []byte
 }
 
-// NewBloom creates a bloom filter of length `size` bytes and
+// NewSimpleBF creates a bloom filter of length `size` bytes and
 // `hashSeeds` are the seed values for themurmur hash functions
 // bloom will be initialized with len(hashSeeds) hash functions
 // with provided seeds.
 // if no hashSeeds are provided then 2 hash functions will be used
 // with random seeds.
-func NewBloom(size int, hashSeeds []int) *Bloom {
-	bf := &Bloom{filter: make([]byte, size)}
+func newBloom(size int, hashSeeds []int) *bloom {
+	bf := &bloom{filter: make([]byte, size)}
 
 	if hashSeeds == nil || len(hashSeeds) == 0 {
 		hashSeeds = make([]int, DefaultHashFns)
@@ -41,22 +41,26 @@ func NewBloom(size int, hashSeeds []int) *Bloom {
 }
 
 // Put puts the element `x` in the bloom filter
-func (b *Bloom) Put(x []byte) error {
-	var err error
-	for i := range b.fns {
-		b.fns[i].Reset()
-		if _, err = b.fns[i].Write(x); err != nil {
-			return err
-		}
-		pos := int(b.fns[i].Sum32()) % (len(b.filter) * 8)
-		idx, offset := pos/8, pos%8
-		b.filter[idx] = b.filter[idx] | 1<<offset
+func (b *bloom) put(x []byte) ([]int, []int, error) {
+	var setBits []int = make([]int, 0, len(b.fns))
+	var unsetBits []int = make([]int, 0, len(b.fns))
+	positions, err := b.positions(x)
+	if err != nil {
+		return nil, nil, err
 	}
-	return nil
+	for i := range positions {
+		if getBit(b.filter, positions[i]) == 0 {
+			setBit(b.filter, positions[i])
+			setBits = append(setBits, positions[i])
+		} else {
+			unsetBits = append(unsetBits, positions[i])
+		}
+	}
+	return setBits, unsetBits, nil
 }
 
 // Check checks the existence of the element `x` in the bloom filter
-func (b *Bloom) Check(x []byte) (bool, error) {
+func (b *bloom) check(x []byte) (bool, error) {
 	var err error
 	var keyExists bool = true
 	for i := range b.fns {
@@ -65,11 +69,24 @@ func (b *Bloom) Check(x []byte) (bool, error) {
 			return false, err
 		}
 		pos := int(b.fns[i].Sum32()) % (len(b.filter) * 8)
-		idx, offset := pos/8, pos%8
-		if b.filter[idx]&(1<<offset) == 0 {
+		if getBit(b.filter, pos) == 0 {
 			keyExists = false
 			break
 		}
 	}
 	return keyExists, nil
+}
+
+// positions returns the evaluated positions for the element `x` in the bloom filter
+func (b *bloom) positions(x []byte) ([]int, error) {
+	var err error
+	var positions []int = make([]int, len(b.fns))
+	for i := range b.fns {
+		b.fns[i].Reset()
+		if _, err = b.fns[i].Write(x); err != nil {
+			return nil, err
+		}
+		positions[i] = int(b.fns[i].Sum32()) % (len(b.filter) * 8)
+	}
+	return positions, nil
 }

@@ -14,7 +14,7 @@ import (
 var corpusMap map[string]bool
 var testWordsB [][]byte
 var testWordsS []string
-var bf *abloom.Bloom
+var bf *abloom.SimpleBF
 
 func init() {
 	setup()
@@ -38,7 +38,7 @@ func setup() {
 	corpusMap = make(map[string]bool)
 	testWordsB = make([][]byte, 0)
 	testWordsS = make([]string, 0)
-	bf = abloom.NewBloom(500*1024, nil)
+	bf = abloom.NewSimpleBF(500*1024, nil)
 
 	frac := 0.9
 

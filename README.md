@@ -1,7 +1,11 @@
 abloom
 ===
 
-`abloom` is a pure Go implementation of Bloom Filter.
+`abloom` is a pure Go implementation of Bloom Filter. The implementation supports the following
+Bloom Filters
+
+- Simple Bloom Filter
+- Deletable Bloom Filter
 
 ## Installation
 
@@ -15,7 +19,7 @@ A simple example of using bloom filter is as shown below. More examples can be f
 in the [examples directory](https://github.com/arpitbbhayani/abloom/tree/master/examples/) of the package.
 
 ```go
-package examples
+package main
 
 import (
 	"log"
@@ -23,8 +27,8 @@ import (
 	"github.com/arpitbbhayani/abloom"
 )
 
-func SimpleBloom() {
-	b := abloom.NewBloom(512, nil)
+func main() {
+	b := abloom.NewSimpleBF(512, nil)
 	b.Put([]byte("apple"))
 	b.Put([]byte("banana"))
 	b.Put([]byte("cat"))
@@ -71,6 +75,10 @@ number of hash functions given how expensive hash computation can get.
 ![hash-fp](https://user-images.githubusercontent.com/4745789/200518773-76631419-a909-408e-9063-08a366218da2.png)
 ![hash-time](https://user-images.githubusercontent.com/4745789/200518783-835411e1-838e-4587-8b54-1de0acb54ca1.png)
 
+### Deletable Bloom Filter Number of Regions vs False Positive Rate
+
+![dbf-region](https://user-images.githubusercontent.com/4745789/200841018-dffcbeb3-d6be-43f8-a8da-e29ef28698a2.png)
+
 ## Benchmark
 
 Preliminary benchmark results on [profanity usecase](https://github.com/arpitbbhayani/abloom/tree/master/examples/perftest) are shown below. Please refer to the perf test code to see what has been
@@ -92,6 +100,7 @@ BenchmarkSetOneRandomCheck-16            6412029               178.6 ns/op
 ## Citations
 
 - Bloom, Burton H. “Space/Time Trade-Offs in Hash Coding with Allowable Errors.” Communications of the ACM 13, no. 7 (July 1970): 422–26. https://doi.org/10.1145/362686.362692.
+- Rothenberg, Christian Esteve, Carlos A. B. Macapuna, Fabio L. Verdi, and Mauricio F. Magalhaes. “The Deletable Bloom Filter: A New Member of the Bloom Family.” arXiv, May 3, 2010. http://arxiv.org/abs/1005.0352.
 
 ## Contributors
 
@@ -101,4 +110,4 @@ BenchmarkSetOneRandomCheck-16            6412029               178.6 ns/op
 
 ## License
 
-DiceDB is open-sourced under [Apache License, Version 2.0](LICENSE.md).
+Abloom is open-sourced under [Apache License, Version 2.0](LICENSE.md).
