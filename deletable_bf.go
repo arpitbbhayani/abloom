@@ -36,8 +36,6 @@ func (b *DeletableBloom) Put(x []byte) error {
 		setBit(b.pallete, posReg)
 	}
 
-	printFilter(b.pallete)
-	printFilter(b.bloom.filter)
 	return nil
 }
 

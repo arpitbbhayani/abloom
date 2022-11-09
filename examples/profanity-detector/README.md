@@ -26,6 +26,7 @@ $ pip install graph-cli
 $ graph size-bench.csv --xcol 2 --ycol 4 -o size-fp.png
 $ graph hashfn-bench.csv --xcol 3 --ycol 4 -o hash-fp.png
 $ graph hashfn-bench.csv --xcol 3 --ycol 5 -o hash-time.png
+$ graph dbf-region-bench.csv --xcol 6 --ycol 4 -o dbf-region.png
 ```
 
 ## Results
