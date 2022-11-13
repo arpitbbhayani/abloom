@@ -79,6 +79,10 @@ number of hash functions given how expensive hash computation can get.
 
 ![dbf-region](https://user-images.githubusercontent.com/4745789/200841018-dffcbeb3-d6be-43f8-a8da-e29ef28698a2.png)
 
+### When not to use BF
+
+![paradox-benchmark](https://user-images.githubusercontent.com/4745789/201531618-1a736e49-3927-4f86-b60e-4a810fa69d90.png)
+
 ## Benchmark
 
 Preliminary benchmark results on [profanity usecase](https://github.com/arpitbbhayani/abloom/tree/master/examples/perftest) are shown below. Please refer to the perf test code to see what has been
